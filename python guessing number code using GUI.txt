@@ -1,0 +1,85 @@
+import random
+import time
+import tkinter as tk
+
+def display_leaderboard(leaderboard):
+    leaderboard_text = "\nLEADERBOARD:\n"
+    for i, entry in enumerate(leaderboard):
+        name, score = entry
+        leaderboard_text += "{}. {}: {}\n".format(i + 1, name, score)
+    leaderboard_label.config(text=leaderboard_text)
+
+def update_leaderboard(leaderboard, name, score):
+    leaderboard.append((name, score))
+    leaderboard.sort(key=lambda x: x[1])
+    leaderboard = leaderboard[:5]
+    return leaderboard
+
+def play_game(difficulty):
+    global score_label, guess_entry, message_label, play_button
+    
+    if difficulty == 1:
+        max_num = 10
+        time_limit = 20
+    elif difficulty == 2:
+        max_num = 50
+        time_limit = 30
+    else:
+        max_num = 100
+        time_limit = 45
+
+    lottery = random.randint(1, max_num)
+    start_time = time.time()
+    guess = int(guess_entry.get())
+    counter = 1
+    previous_guesses = []
+
+    guess_entry.config(state='disabled')
+    message_label.config(text="")
+    play_button.config(state='disabled')
+    
+    while guess != lottery:
+        if guess < lottery:
+            message_label.config(text="Guess higher")
+        else:
+            message_label.config(text="Guess lower")
+        
+        if time.time() - start_time > time_limit:
+            message_label.config(text="Time's up! Better luck next time.")
+            guess_entry.config(state='normal')
+            play_button.config(state='normal')
+            return
+
+        previous_guesses.append(guess)
+        if len(previous_guesses) > 2:
+            if abs(previous_guesses[-3] - lottery) < abs(previous_guesses[-1] - lottery):
+                message_label.config(text="You're getting colder.")
+            else:
+                message_label.config(text="You're getting warmer.")
+        root.update()
+        
+        guess = int(guess_entry.get())
+        counter += 1
+
+
+root = tk.Tk()
+root.geometry("400x400")
+root.title("Number Guessing Game")
+
+score_label = tk.Label(root, text="")
+score_label.pack()
+
+guess_entry = tk.Entry(root)
+guess_entry.pack()
+
+message_label = tk.Label(root, text="")
+message_label.pack()
+
+play_button = tk.Button(root, text="Play", command=lambda: play_game(1))
+play_button.pack()
+
+leaderboard = []
+leaderboard_label = tk.Label(root, text="")
+leaderboard_label.pack()
+
+root.mainloop()
